@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+@theme {
+  /* Text + structural ink */
+  --color-ink: #101828;
+  --color-ink-2: #1d2939;
+  --color-ink-3: #344054;
+  --color-slate: #475467;
+  --color-muted: #98a2b3;
+
+  /* Surfaces + lines */
+  --color-canvas: #f6f7f9;
+  --color-hover: #f8f9fb;
+  --color-line: #e7e9ef;
+  --color-line-soft: #eef0f4;
+
+  /* Brand — Seeger Weiss navy + brass */
+  --color-brass: #b1843f;
+  --color-brass-soft: #f5ecdd;
+  --color-brass-ink: #6f4e18;
+
+  /* Semantic accents (restrained, print-legal palette) */
+  --color-brand-blue: #2f5fd0;
+  --color-brand-blue-soft: #e8effb;
+  --color-brand-green: #2f7d54;
+  --color-brand-green-soft: #e3f1e9;
+  --color-brand-amber: #a9781a;
+  --color-brand-amber-soft: #f8efd6;
+  --color-brand-red: #b23b3b;
+  --color-brand-red-soft: #f8e5e5;
+  --color-brand-teal: #0f7490;
+  --color-brand-teal-soft: #e0f0f4;
+
+  --color-neutral-soft: #f2f4f7;
+
+  --font-serif-brand: Georgia, "Times New Roman", serif;
+
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-pop: 0 8px 28px rgba(16, 24, 40, 0.14), 0 2px 6px rgba(16, 24, 40, 0.08);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Scrollbars — thin, unobtrusive */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d5d9e2;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c2c8d4;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+/* Focus ring for keyboard users only */
+:focus-visible {
+  outline: 2px solid var(--color-brand-blue);
+  outline-offset: 1px;
+}
+
+/* Motion primitives for overlays / popovers */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes slide-in-right {
+  from {
+    opacity: 0.4;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.animate-fade {
+  animation: fade-in 0.16s ease-out;
+}
+.animate-pop {
+  animation: pop-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.animate-slide-down {
+  animation: slide-down 0.16s ease-out;
+}
+.animate-drawer {
+  animation: slide-in-right 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Reusable elevation helpers bound to the theme shadows */
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+.shadow-pop {
+  box-shadow: var(--shadow-pop);
+}

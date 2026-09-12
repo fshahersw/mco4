@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Seeger Weiss — Docket Monitor (MCO)</title>
+<style>
+  :root {
+    --ink: #10192b;
+    --ink-2: #1b2942;
+    --slate: #4a5568;
+    --muted: #8a94a6;
+    --line: #e4e7ee;
+    --line-2: #eef0f5;
+    --bg: #f5f6f9;
+    --panel: #ffffff;
+    --brass: #b1843f;
+    --brass-soft: #f3e9d8;
+    --blue: #2f5fd0;
+    --blue-soft: #e7eefb;
+    --green: #2f7d54;
+    --green-soft: #e4f2ea;
+    --amber: #b6841e;
+    --amber-soft: #f8efd6;
+    --red: #b23b3b;
+    --red-soft: #f7e3e3;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(16,25,43,.06), 0 4px 16px rgba(16,25,43,.05);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --serif: Georgia, "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .app { display: grid; grid-template-columns: 244px 1fr; grid-template-rows: 58px 1fr; height: 100vh; }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    grid-column: 1 / 3;
+    background: var(--ink);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 20px;
+    z-index: 20;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; width: 224px; flex-shrink: 0; }
+  .brand-mark {
+    width: 30px; height: 30px; border-radius: 7px;
+    background: linear-gradient(135deg, var(--brass), #8a6329);
+    display: grid; place-items: center;
+    font-family: var(--serif); font-weight: 700; font-size: 15px; color: #fff;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+  }
+  .brand-name { font-family: var(--serif); font-size: 15px; letter-spacing: .3px; }
+  .brand-name span { display: block; font-family: var(--font); font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #9fb0cc; font-weight: 600; }
+
+  .search { flex: 1; max-width: 520px; position: relative; }
+  .search input {
+    width: 100%; height: 36px; border: none; border-radius: 8px;
+    background: rgba(255,255,255,.08); color: #fff; padding: 0 14px 0 38px;
+    font-size: 13px; font-family: var(--font);
+  }
+  .search input::placeholder { color: #9aa7bd; }
+  .search input:focus { outline: none; background: rgba(255,255,255,.14); }
+  .search svg { position: absolute; left: 12px; top: 9px; opacity: .6; }
+
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .role-switch { display: flex; background: rgba(255,255,255,.08); border-radius: 8px; padding: 3px; gap: 2px; }
+  .role-switch button {
+    border: none; background: transparent; color: #b9c4d6; font-family: var(--font);
+    font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+    white-space: nowrap; transition: all .15s;
+  }
+  .role-switch button:hover { color: #fff; }
+  .role-switch button.active { background: var(--brass); color: #fff; }
+
+  .iconbtn { width: 36px; height: 36px; border-radius: 8px; border: none; background: rgba(255,255,255,.08); color: #cfd8e6; cursor: pointer; display: grid; place-items: center; position: relative; }
+  .iconbtn:hover { background: rgba(255,255,255,.16); }
+  .iconbtn .dot { position: absolute; top: 8px; right: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--brass); box-shadow: 0 0 0 2px var(--ink); }
+  .avatar { width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg,#2f5fd0,#1b2942); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 12px; margin-left: 4px; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar { background: var(--panel); border-right: 1px solid var(--line); padding: 16px 12px; overflow-y: auto; }
+  .nav-group { margin-bottom: 20px; }
+  .nav-label { font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 0 12px 8px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: 8px;
+    color: var(--slate); cursor: pointer; font-weight: 500; font-size: 13px; margin-bottom: 2px;
+    transition: background .12s, color .12s; user-select: none;
+  }
+  .nav-item:hover { background: var(--bg); color: var(--ink); }
+  .nav-item.active { background: var(--ink); color: #fff; }
+  .nav-item.active svg { opacity: 1; }
+  .nav-item svg { opacity: .55; flex-shrink: 0; }
+  .nav-item .count { margin-left: auto; font-size: 11px; font-weight: 700; background: var(--line-2); color: var(--slate); padding: 1px 7px; border-radius: 20px; }
+  .nav-item.active .count { background: rgba(255,255,255,.18); color: #fff; }
+  .nav-item .count.alert { background: var(--red-soft); color: var(--red); }
+
+  .sidebar-foot { margin-top: auto; padding: 12px; border-top: 1px solid var(--line-2); font-size: 11.5px; color: var(--muted); }
+  .src-status { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--bg); border-radius: 8px; margin-top: 8px; }
+  .src-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .src-dot.off { background: var(--amber); }
+
+  /* ---------- Main ---------- */
+  .main { overflow-y: auto; padding: 24px 28px 60px; }
+  .page-head { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
+  .page-head h1 { font-size: 21px; font-weight: 700; letter-spacing: -.3px; }
+  .page-head p { color: var(--slate); font-size: 13px; margin-top: 3px; }
+  .page-head .actions { margin-left: auto; display: flex; gap: 8px; }
+  .btn { border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-family: var(--font); font-weight: 600; font-size: 12.5px; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+  .btn:hover { border-color: #cdd3df; background: #fafbfc; }
+  .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .btn.primary:hover { background: var(--ink-2); }
+  .btn.brass { background: var(--brass); color: #fff; border-color: var(--brass); }
+
+  .banner { background: var(--amber-soft); border: 1px solid #ecd9a8; color: #6d5210; border-radius: 10px; padding: 11px 16px; font-size: 12.5px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .banner b { color: #4d3908; }
+
+  /* stat cards */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
+  .stat .label { font-size: 11.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+  .stat .val { font-size: 28px; font-weight: 700; margin-top: 6px; letter-spacing: -.5px; }
+  .stat .sub { font-size: 12px; margin-top: 4px; color: var(--slate); display: flex; align-items: center; gap: 5px; }
+  .trend-up { color: var(--green); font-weight: 700; }
+  .trend-down { color: var(--red); font-weight: 700; }
+  .stat .val small { font-size: 14px; color: var(--muted); font-weight: 600; }
+
+  /* layout cols */
+  .cols { display: grid; grid-template-columns: 1.6fr 1fr; gap: 18px; align-items: start; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .card-head { padding: 15px 18px; border-bottom: 1px solid var(--line-2); display: flex; align-items: center; gap: 10px; }
+  .card-head h3 { font-size: 14px; font-weight: 700; }
+  .card-head .link { margin-left: auto; font-size: 12px; color: var(--blue); font-weight: 600; cursor: pointer; }
+  .card-body { padding: 6px 0; }
+  .card-body.pad { padding: 18px; }
+
+  /* alert feed */
+  .alert-row { display: flex; gap: 13px; padding: 13px 18px; border-bottom: 1px solid var(--line-2); cursor: pointer; }
+  .alert-row:last-child { border-bottom: none; }
+  .alert-row:hover { background: #fafbfc; }
+  .alert-icn { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; font-size: 13px; }
+  .a-red { background: var(--red-soft); color: var(--red); }
+  .a-blue { background: var(--blue-soft); color: var(--blue); }
+  .a-green { background: var(--green-soft); color: var(--green); }
+  .a-amber { background: var(--amber-soft); color: var(--amber); }
+  .alert-main { flex: 1; min-width: 0; }
+  .alert-main .t { font-weight: 600; font-size: 13px; }
+  .alert-main .m { color: var(--slate); font-size: 12.5px; margin-top: 2px; }
+  .alert-main .meta { color: var(--muted); font-size: 11.5px; margin-top: 5px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .alert-time { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
+
+  .badge { font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: .4px; }
+  .b-red { background: var(--red-soft); color: var(--red); }
+  .b-blue { background: var(--blue-soft); color: var(--blue); }
+  .b-green { background: var(--green-soft); color: var(--green); }
+  .b-amber { background: var(--amber-soft); color: var(--amber); }
+  .b-gray { background: var(--line-2); color: var(--slate); }
+  .b-brass { background: var(--brass-soft); color: #7a5518; }
+
+  /* tables */
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 700; padding: 11px 18px; border-bottom: 1px solid var(--line); }
+  tbody td { padding: 13px 18px; border-bottom: 1px solid var(--line-2); font-size: 13px; vertical-align: middle; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: #fafbfc; }
+  tbody tr:last-child td { border-bottom: none; }
+  .cell-strong { font-weight: 600; }
+  .cell-sub { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+  .mono { font-family: "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: var(--slate); }
+
+  /* deadline list */
+  .dl-row { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--line-2); }
+  .dl-row:last-child { border-bottom: none; }
+  .dl-date { text-align: center; width: 46px; flex-shrink: 0; }
+  .dl-date .d { font-size: 18px; font-weight: 700; line-height: 1; }
+  .dl-date .mo { font-size: 10px; text-transform: uppercase; color: var(--muted); font-weight: 700; letter-spacing: .5px; }
+  .dl-main { flex: 1; min-width: 0; }
+  .dl-main .t { font-weight: 600; font-size: 13px; }
+  .dl-main .s { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+
+  /* timeline / log */
+  .tl { padding: 6px 18px 14px; }
+  .tl-item { display: flex; gap: 13px; position: relative; padding: 11px 0; }
+  .tl-item::before { content: ""; position: absolute; left: 6px; top: 26px; bottom: -11px; width: 2px; background: var(--line); }
+  .tl-item:last-child::before { display: none; }
+  .tl-dot { width: 14px; height: 14px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1.5px var(--line); background: var(--muted); margin-top: 4px; flex-shrink: 0; z-index: 1; }
+  .tl-dot.blue { background: var(--blue); } .tl-dot.green { background: var(--green); } .tl-dot.amber { background: var(--amber); } .tl-dot.red { background: var(--red); }
+  .tl-body .t { font-size: 13px; }
+  .tl-body .t b { font-weight: 700; }
+  .tl-body .meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+  /* filters */
+  .filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .chip { border: 1px solid var(--line); background: var(--panel); border-radius: 20px; padding: 6px 13px; font-size: 12px; font-weight: 600; color: var(--slate); cursor: pointer; }
+  .chip:hover { border-color: #cdd3df; }
+  .chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .filters .spacer { flex: 1; }
+
+  /* file grid */
+  .file-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .file-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); cursor: pointer; }
+  .file-card:hover { border-color: #cdd3df; }
+  .file-top { display: flex; align-items: center; gap: 11px; margin-bottom: 12px; }
+  .file-icn { width: 38px; height: 38px; border-radius: 8px; background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; flex-shrink: 0; }
+  .file-icn.pdf { background: var(--red-soft); color: var(--red); }
+  .file-name { font-weight: 600; font-size: 13px; line-height: 1.3; }
+  .file-meta { font-size: 11.5px; color: var(--muted); }
+  .file-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-2); font-size: 11.5px; color: var(--slate); }
+
+  /* progress */
+  .bar { height: 6px; background: var(--line-2); border-radius: 20px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: var(--brass); border-radius: 20px; }
+
+  /* admin cards */
+  .src-card { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-bottom: 1px solid var(--line-2); }
+  .src-card:last-child { border-bottom: none; }
+  .src-logo { width: 42px; height: 42px; border-radius: 9px; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; color: #fff; flex-shrink: 0; }
+  .toggle { width: 40px; height: 22px; border-radius: 20px; background: var(--line); position: relative; cursor: pointer; flex-shrink: 0; }
+  .toggle.on { background: var(--green); }
+  .toggle::after { content: ""; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: left .15s; }
+  .toggle.on::after { left: 21px; }
+
+  /* ---------- Reconciliation ---------- */
+  .rec-layout { display: grid; grid-template-columns: 340px 1fr; gap: 18px; align-items: start; }
+  .rec-queue { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .rec-q-item { padding: 13px 16px; border-bottom: 1px solid var(--line-2); cursor: pointer; border-left: 3px solid transparent; }
+  .rec-q-item:last-child { border-bottom: none; }
+  .rec-q-item:hover { background: #fafbfc; }
+  .rec-q-item.active { background: var(--blue-soft); border-left-color: var(--blue); }
+  .rec-q-item.done { opacity: .55; }
+  .rec-q-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .rec-q-top .mono { margin-left: auto; }
+  .rec-q-case { font-weight: 600; font-size: 12.5px; }
+  .rec-q-text { font-size: 12px; color: var(--slate); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .rec-q-foot { display: flex; align-items: center; gap: 8px; margin-top: 7px; font-size: 11px; color: var(--muted); }
+
+  .rec-detail { display: flex; flex-direction: column; gap: 18px; }
+  .rec-docket { padding: 20px; }
+  .rec-docket .d-title { font-size: 16px; font-weight: 700; letter-spacing: -.2px; }
+  .rec-docket .d-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; }
+  .rec-docket .d-meta .kx { font-size: 12px; } .rec-docket .d-meta .kx b { color: var(--muted); font-weight: 600; display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+  .rec-docket .d-text { margin-top: 16px; padding: 14px 16px; background: var(--bg); border-radius: 8px; font-size: 13px; color: var(--ink); line-height: 1.6; border: 1px solid var(--line-2); }
+
+  .att-list { display: flex; flex-direction: column; }
+  .att-row { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--line-2); }
+  .att-row:last-child { border-bottom: none; }
+  .att-icn { width: 36px; height: 36px; border-radius: 8px; background: var(--red-soft); color: var(--red); display: grid; place-items: center; flex-shrink: 0; }
+  .att-icn.zip { background: var(--brass-soft); color: #7a5518; }
+  .att-main { flex: 1; min-width: 0; }
+  .att-main .n { font-weight: 600; font-size: 13px; }
+  .att-main .s { font-size: 11.5px; color: var(--muted); }
+  .att-actions { display: flex; gap: 6px; }
+  .att-btn { border: 1px solid var(--line); background: #fff; border-radius: 7px; padding: 6px 10px; font-size: 12px; font-weight: 600; color: var(--slate); cursor: pointer; }
+  .att-btn:hover { border-color: #cdd3df; color: var(--ink); }
+
+  /* calendar event form */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 11.5px; font-weight: 700; color: var(--slate); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .4px; }
+  .field input, .field select, .field textarea {
+    width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; font-size: 13px;
+    font-family: var(--font); color: var(--ink); background: #fff;
+  }
+  .field textarea { resize: vertical; min-height: 64px; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .recip-box { border: 1px solid var(--line); border-radius: 8px; padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; min-height: 42px; align-content: flex-start; }
+  .recip { display: inline-flex; align-items: center; gap: 6px; background: var(--blue-soft); color: var(--blue); border-radius: 20px; padding: 4px 6px 4px 10px; font-size: 12px; font-weight: 600; }
+  .recip .x { cursor: pointer; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; background: rgba(47,95,208,.18); font-size: 11px; }
+  .recip-add { border: 1px dashed var(--line); background: #fff; color: var(--slate); border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .recip-add:hover { border-color: var(--blue); color: var(--blue); }
+  .recip-menu { position: absolute; z-index: 30; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 28px rgba(16,25,43,.14); padding: 6px; min-width: 240px; max-height: 260px; overflow-y: auto; }
+  .recip-menu .opt { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 7px; cursor: pointer; font-size: 12.5px; }
+  .recip-menu .opt:hover { background: var(--bg); }
+  .recip-menu .grp { font-size: 10px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 700; padding: 8px 10px 4px; }
+  .email-preview { background: var(--bg); border: 1px solid var(--line-2); border-radius: 8px; padding: 14px; font-size: 12.5px; color: var(--slate); }
+  .email-preview .subj { color: var(--ink); font-weight: 600; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--ink); color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 8px 28px rgba(16,25,43,.3); opacity: 0; transition: all .25s; z-index: 100; display: flex; align-items: center; gap: 10px; }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+  .hide { display: none !important; }
+
+  .empty { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+  .kv { display: grid; grid-template-columns: 130px 1fr; gap: 10px 16px; font-size: 13px; }
+  .kv dt { color: var(--muted); font-weight: 600; }
+  .kv dd { font-weight: 500; }
+  .avatar-sm { width: 26px; height: 26px; border-radius: 6px; background: var(--blue-soft); color: var(--blue); display: inline-grid; place-items: center; font-size: 10.5px; font-weight: 700; }
+
+  .foot-note { margin-top: 28px; text-align: center; color: var(--muted); font-size: 11.5px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">SW</div>
+      <div class="brand-name">Docket Monitor<span>Seeger Weiss · MCO</span></div>
+    </div>
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input placeholder="Search cases, dockets, parties, filings…" />
+    </div>
+    <div class="topbar-right">
+      <div class="role-switch" id="roleSwitch">
+        <button data-role="admin" class="active">Admin (Dev)</button>
+        <button data-role="clerk">Managing Clerk</button>
+        <button data-role="para">Lit Paralegal</button>
+      </div>
+      <button class="iconbtn" title="Alerts"><span class="dot"></span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button>
+      <div class="avatar" id="userAvatar">FS</div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="nav-group">
+      <div class="nav-label">Monitor</div>
+      <div class="nav-item active" data-view="dashboard">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-view="alerts">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        Alerts <span class="count alert">7</span>
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Records</div>
+      <div class="nav-item" data-view="cases">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9L9 4H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/></svg>
+        Cases <span class="count">42</span>
+      </div>
+      <div class="nav-item" data-view="dockets">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
+        Dockets <span class="count">318</span>
+      </div>
+      <div class="nav-item" data-view="files">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+        Files <span class="count">1.2k</span>
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Operations</div>
+      <div class="nav-item" data-view="log">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+        Activity Log
+      </div>
+      <div class="nav-item" data-view="reconcile">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M9 12l2 2 4-4"/></svg>
+        Reconciliation <span class="count alert">6</span>
+      </div>
+      <div class="nav-item admin-only" data-view="sources">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6a8 3 0 1 0 16 0A8 3 0 1 0 4 6"/><path d="M4 6v6a8 3 0 0 0 16 0V6M4 12v6a8 3 0 0 0 16 0v-6"/></svg>
+        Sources
+      </div>
+      <div class="nav-item admin-only" data-view="users">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>
+        Users &amp; Roles
+      </div>
+    </div>
+    <div class="sidebar-foot">
+      <div>Data source</div>
+      <div class="src-status">
+        <span class="src-dot off"></span>
+        <div><b style="color:var(--ink)">DocketBird</b><br/>Demo data · not connected</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+
+    <!-- ============ DASHBOARD ============ -->
+    <section class="view active" data-view="dashboard">
+      <div class="page-head">
+        <div>
+          <h1 id="dashTitle">MCO Docket Overview</h1>
+          <p id="dashSub">Portfolio-wide docket activity across active multi-county and MDL matters.</p>
+        </div>
+        <div class="actions">
+          <button class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/><path d="M21 3v6h-6"/></svg>Sync now</button>
+          <button class="btn primary">+ Track new case</button>
+        </div>
+      </div>
+
+      <div class="banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <div><b>First-draft prototype.</b> All figures below are synthetic demo data. Live monitoring activates once the DocketBird source is connected in Sources.</div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat"><div class="label">Tracked Cases</div><div class="val">42</div><div class="sub"><span class="trend-up">+3</span> this week</div></div>
+        <div class="stat"><div class="label">New Docket Entries</div><div class="val">128 <small>/ 24h</small></div><div class="sub"><span class="trend-up">+18%</span> vs. prior day</div></div>
+        <div class="stat"><div class="label">Open Alerts</div><div class="val">7</div><div class="sub"><span class="trend-down">2 high priority</span></div></div>
+        <div class="stat"><div class="label">Deadlines &lt; 7 days</div><div class="val">5</div><div class="sub">Next: Sep 15</div></div>
+      </div>
+
+      <div class="cols">
+        <div class="card">
+          <div class="card-head">
+            <h3>Recent Docket Activity</h3>
+            <span class="link" data-goto="alerts">View all alerts →</span>
+          </div>
+          <div class="card-body" id="dashAlerts"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Upcoming Deadlines</h3></div>
+          <div class="card-body" id="dashDeadlines"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ALERTS ============ -->
+    <section class="view" data-view="alerts">
+      <div class="page-head">
+        <div><h1>Alerts</h1><p>Docket events flagged against your monitoring rules.</p></div>
+        <div class="actions"><button class="btn">Mark all read</button><button class="btn primary">+ New rule</button></div>
+      </div>
+      <div class="filters">
+        <span class="chip active">All</span>
+        <span class="chip">High priority</span>
+        <span class="chip">New filings</span>
+        <span class="chip">Orders</span>
+        <span class="chip">Deadlines</span>
+        <span class="spacer"></span>
+        <span class="chip">Assigned to me</span>
+      </div>
+      <div class="card"><div class="card-body" id="alertsFull"></div></div>
+    </section>
+
+    <!-- ============ CASES ============ -->
+    <section class="view" data-view="cases">
+      <div class="page-head">
+        <div><h1>Cases</h1><p>Matters under active docket monitoring, grouped by litigation.</p></div>
+        <div class="actions"><button class="btn">Export</button><button class="btn primary">+ Track new case</button></div>
+      </div>
+      <div class="filters">
+        <span class="chip active">All matters</span>
+        <span class="chip">MDL</span>
+        <span class="chip">NJ Multicounty</span>
+        <span class="chip">State</span>
+        <span class="chip">Active</span>
+        <span class="chip">Stayed</span>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Case</th><th>Court</th><th>Docket No.</th><th>Type</th><th>Last activity</th><th>Alerts</th><th>Status</th></tr></thead>
+          <tbody id="casesBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ DOCKETS ============ -->
+    <section class="view" data-view="dockets">
+      <div class="page-head">
+        <div><h1>Docket Entries</h1><p>Chronological docket text ingested across all tracked matters.</p></div>
+        <div class="actions"><button class="btn">Filter</button><button class="btn">Export</button></div>
+      </div>
+      <div class="filters">
+        <span class="chip active">All</span>
+        <span class="chip">Motions</span>
+        <span class="chip">Orders</span>
+        <span class="chip">Notices</span>
+        <span class="chip">Case management</span>
+        <span class="spacer"></span>
+        <span class="chip">Last 24h</span>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th style="width:70px">Entry</th><th>Filed</th><th>Case</th><th>Docket text</th><th>Type</th></tr></thead>
+          <tbody id="docketsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ FILES ============ -->
+    <section class="view" data-view="files">
+      <div class="page-head">
+        <div><h1>Files</h1><p>Documents pulled from docket entries and linked to matters.</p></div>
+        <div class="actions"><button class="btn">Upload</button><button class="btn primary">Bulk download</button></div>
+      </div>
+      <div class="filters">
+        <span class="chip active">All files</span>
+        <span class="chip">Complaints</span>
+        <span class="chip">Orders</span>
+        <span class="chip">Motions</span>
+        <span class="chip">Exhibits</span>
+        <span class="spacer"></span>
+        <span class="chip">Recently added</span>
+      </div>
+      <div class="file-grid" id="filesGrid"></div>
+    </section>
+
+    <!-- ============ ACTIVITY LOG ============ -->
+    <section class="view" data-view="log">
+      <div class="page-head">
+        <div><h1>Activity Log</h1><p id="logSub">Audit trail of ingestion, coding, and user actions.</p></div>
+        <div class="actions"><button class="btn">Filter by case</button><button class="btn">Export CSV</button></div>
+      </div>
+      <div class="cols">
+        <div class="card">
+          <div class="card-head"><h3>Event timeline</h3><span class="link">Today</span></div>
+          <div class="tl" id="logTimeline"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Log by category</h3></div>
+          <div class="card-body pad" id="logStats"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ RECONCILIATION ============ -->
+    <section class="view" data-view="reconcile">
+      <div class="page-head">
+        <div><h1>Docket Reconciliation</h1><p>Review new docket entries and attachments, then calendar deadlines and route them to the case team.</p></div>
+        <div class="actions"><button class="btn">Filter by case</button><button class="btn">Mark reviewed</button></div>
+      </div>
+      <div class="banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <div><b>Mock reconciliation queue.</b> Attachments and email delivery are simulated. Selecting an entry loads its docket text, attachments, and a calendar-event composer.</div>
+      </div>
+      <div class="rec-layout">
+        <!-- queue -->
+        <div class="rec-queue">
+          <div class="card-head" style="border-bottom:1px solid var(--line)"><h3>Needs review</h3><span class="link" id="recCount">6 entries</span></div>
+          <div id="recQueue"></div>
+        </div>
+        <!-- detail -->
+        <div class="rec-detail">
+          <div class="card rec-docket" id="recDocket"></div>
+
+          <div class="card">
+            <div class="card-head"><h3>Attachments</h3><span class="link" id="recAttCount"></span></div>
+            <div class="att-list" id="recAtt"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              <h3>Create calendar event</h3>
+            </div>
+            <div class="card-body pad">
+              <div class="field">
+                <label>Event title</label>
+                <input id="evTitle" placeholder="e.g. Daubert response due" />
+              </div>
+              <div class="field-row">
+                <div class="field"><label>Date</label><input id="evDate" type="date" /></div>
+                <div class="field"><label>Time</label><input id="evTime" type="time" value="09:00" /></div>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label>Type</label>
+                  <select id="evType"><option>Filing deadline</option><option>Hearing</option><option>Case management conf.</option><option>Internal review</option><option>Reminder</option></select>
+                </div>
+                <div class="field">
+                  <label>Reminder</label>
+                  <select id="evRemind"><option>1 day before</option><option>3 days before</option><option>1 week before</option><option>Same day</option></select>
+                </div>
+              </div>
+              <div class="field" style="position:relative">
+                <label>Send to case team / paralegals</label>
+                <div class="recip-box" id="recipBox"></div>
+              </div>
+              <div class="field">
+                <label>Note (optional)</label>
+                <textarea id="evNote" placeholder="Add context for the recipients…"></textarea>
+              </div>
+              <div class="field">
+                <label>Email preview</label>
+                <div class="email-preview" id="emailPreview"></div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn primary" id="btnSendEvent">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                  Create &amp; email event
+                </button>
+                <button class="btn" id="btnAddCal">Add to my calendar only</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SOURCES (admin) ============ -->
+    <section class="view" data-view="sources">
+      <div class="page-head">
+        <div><h1>Sources</h1><p>Connected docket feeds and ingestion configuration.</p></div>
+        <div class="actions"><button class="btn primary">+ Add source</button></div>
+      </div>
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-head"><h3>Docket feeds</h3></div>
+        <div class="card-body">
+          <div class="src-card">
+            <div class="src-logo" style="background:linear-gradient(135deg,#2f5fd0,#1b2942)">DB</div>
+            <div style="flex:1"><div class="cell-strong">DocketBird</div><div class="cell-sub">PACER-backed federal docket monitoring · API key required</div></div>
+            <span class="badge b-amber">Not connected</span>
+            <div class="toggle"></div>
+          </div>
+          <div class="src-card">
+            <div class="src-logo" style="background:linear-gradient(135deg,#2f7d54,#1c4a32)">NJ</div>
+            <div style="flex:1"><div class="cell-strong">NJ Courts eCourts</div><div class="cell-sub">State &amp; multicounty docket access</div></div>
+            <span class="badge b-gray">Planned</span>
+            <div class="toggle"></div>
+          </div>
+          <div class="src-card">
+            <div class="src-logo" style="background:linear-gradient(135deg,#b1843f,#8a6329)">LF</div>
+            <div style="flex:1"><div class="cell-strong">Litify / Salesforce</div><div class="cell-sub">Matter sync &amp; case metadata (Docrio documents)</div></div>
+            <span class="badge b-gray">Planned</span>
+            <div class="toggle"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>DocketBird configuration</h3></div>
+        <div class="card-body pad">
+          <dl class="kv">
+            <dt>Environment</dt><dd>Bedrock · us-east-1</dd>
+            <dt>API endpoint</dt><dd class="mono">https://api.docketbird.com/v1/ <span class="badge b-gray">placeholder</span></dd>
+            <dt>Auth</dt><dd>API key <span class="badge b-amber">not set</span></dd>
+            <dt>Poll interval</dt><dd>Every 15 minutes</dd>
+            <dt>PHI handling</dt><dd>No PHI persisted in logs or fixtures · synthetic only</dd>
+          </dl>
+          <div style="margin-top:18px;display:flex;gap:8px"><button class="btn brass">Connect DocketBird</button><button class="btn">Test connection</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ USERS (admin) ============ -->
+    <section class="view" data-view="users">
+      <div class="page-head">
+        <div><h1>Users &amp; Roles</h1><p>Access control for the three dashboard views.</p></div>
+        <div class="actions"><button class="btn primary">+ Invite user</button></div>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>User</th><th>Role</th><th>Assigned matters</th><th>Last active</th><th>Status</th></tr></thead>
+          <tbody id="usersBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="foot-note">Seeger Weiss LLP · Docket Monitor prototype · synthetic data · non-functional first draft</div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- Synthetic demo data (no PHI) ----------
+const alerts = [
+  { icn:'a-red',   ic:'!', t:'New Order entered — In re: Zantac (Ranitidine) MDL', m:'Case Management Order No. 14 setting Science Day schedule.', case:'In re: Zantac Products Liab.', badge:['b-red','High'], time:'12m ago' },
+  { icn:'a-blue',  ic:'+', t:'New filing — In re: Talcum Powder NJ MCL', m:'Plaintiffs’ Steering Committee status report (Dkt. 2,204).', case:'In re: Talc NJ MCL 300', badge:['b-blue','Filing'], time:'48m ago' },
+  { icn:'a-amber', ic:'○', t:'Deadline approaching — Roundup MDL', m:'Response to Daubert motion due in 6 days.', case:'In re: Roundup Products Liab.', badge:['b-amber','Deadline'], time:'2h ago' },
+  { icn:'a-green', ic:'✓', t:'Document ingested — 3M Combat Arms', m:'42 exhibits linked to matter and coded.', case:'In re: 3M Combat Arms Earplug', badge:['b-green','Ingest'], time:'3h ago' },
+  { icn:'a-blue',  ic:'+', t:'New docket text — Camp Lejeune Water', m:'Notice of appearance filed by defense counsel.', case:'In re: Camp Lejeune Water Litig.', badge:['b-blue','Filing'], time:'5h ago' },
+  { icn:'a-red',   ic:'!', t:'Order to Show Cause — NJ Accutane MCL', m:'OSC re: plaintiff fact sheet deficiencies (Dkt. 1,180).', case:'In re: Accutane NJ MCL 271', badge:['b-red','High'], time:'6h ago' },
+  { icn:'a-amber', ic:'○', t:'Hearing set — Paraquat MDL', m:'Case management conference scheduled Sep 22.', case:'In re: Paraquat Products Liab.', badge:['b-amber','Deadline'], time:'8h ago' },
+];
+
+const deadlines = [
+  { d:'15', mo:'Sep', t:'Daubert response due', s:'Roundup MDL · No. 2741' },
+  { d:'18', mo:'Sep', t:'Plaintiff fact sheets', s:'Accutane NJ MCL 271' },
+  { d:'22', mo:'Sep', t:'Case management conf.', s:'Paraquat MDL · No. 3004' },
+  { d:'29', mo:'Sep', t:'Expert disclosures', s:'Zantac MDL · No. 2924' },
+  { d:'02', mo:'Oct', t:'Status report filing', s:'Talc NJ MCL 300' },
+];
+
+const cases = [
+  { name:'In re: Zantac (Ranitidine) Products Liab.', court:'S.D. Fla.', dkt:'9:20-md-02924', type:['b-brass','MDL'], last:'12m ago', alerts:3, status:['b-green','Active'] },
+  { name:'In re: Talcum Powder', court:'NJ Super. — Atlantic', dkt:'MCL 300', type:['b-blue','NJ MCL'], last:'48m ago', alerts:2, status:['b-green','Active'] },
+  { name:'In re: Roundup Products Liab.', court:'N.D. Cal.', dkt:'3:16-md-02741', type:['b-brass','MDL'], last:'2h ago', alerts:1, status:['b-green','Active'] },
+  { name:'In re: 3M Combat Arms Earplug', court:'N.D. Fla.', dkt:'3:19-md-02885', type:['b-brass','MDL'], last:'3h ago', alerts:0, status:['b-amber','Settling'] },
+  { name:'In re: Camp Lejeune Water Litig.', court:'E.D.N.C.', dkt:'7:23-cv-00897', type:['b-gray','Federal'], last:'5h ago', alerts:1, status:['b-green','Active'] },
+  { name:'In re: Accutane', court:'NJ Super. — Atlantic', dkt:'MCL 271', type:['b-blue','NJ MCL'], last:'6h ago', alerts:2, status:['b-green','Active'] },
+  { name:'In re: Paraquat Products Liab.', court:'S.D. Ill.', dkt:'3:21-md-03004', type:['b-brass','MDL'], last:'8h ago', alerts:1, status:['b-green','Active'] },
+  { name:'In re: Valsartan NDMA Contamination', court:'D.N.J.', dkt:'1:19-md-02875', type:['b-brass','MDL'], last:'1d ago', alerts:0, status:['b-gray','Stayed'] },
+];
+
+const dockets = [
+  { no:'2,924', filed:'Sep 11', case:'Zantac MDL', text:'CASE MANAGEMENT ORDER NO. 14 setting Science Day and expert schedule.', type:['b-red','Order'] },
+  { no:'2,204', filed:'Sep 11', case:'Talc NJ MCL 300', text:'STATUS REPORT by Plaintiffs’ Steering Committee regarding census.', type:['b-blue','Notice'] },
+  { no:'1,880', filed:'Sep 11', case:'Roundup MDL', text:'MOTION to Exclude Expert Testimony (Daubert) filed by Defendants.', type:['b-amber','Motion'] },
+  { no:'1,180', filed:'Sep 11', case:'Accutane NJ MCL', text:'ORDER TO SHOW CAUSE re: plaintiff fact sheet deficiencies.', type:['b-red','Order'] },
+  { no:'  742', filed:'Sep 10', case:'Camp Lejeune', text:'NOTICE OF APPEARANCE by defense counsel on behalf of United States.', type:['b-blue','Notice'] },
+  { no:'3,004', filed:'Sep 10', case:'Paraquat MDL', text:'NOTICE of Case Management Conference set for Sep 22, 2026.', type:['b-gray','CMO'] },
+  { no:'2,885', filed:'Sep 10', case:'3M Combat Arms', text:'ORDER approving settlement distribution procedures.', type:['b-red','Order'] },
+];
+
+const files = [
+  { name:'CMO No. 14 — Science Day Schedule.pdf', case:'Zantac MDL', size:'1.4 MB', date:'Sep 11', tag:['b-red','Order'], pdf:true },
+  { name:'PSC Status Report — Q3 Census.pdf', case:'Talc NJ MCL 300', size:'820 KB', date:'Sep 11', tag:['b-blue','Report'], pdf:true },
+  { name:'Daubert Motion to Exclude.pdf', case:'Roundup MDL', size:'3.2 MB', date:'Sep 11', tag:['b-amber','Motion'], pdf:true },
+  { name:'Order to Show Cause.pdf', case:'Accutane NJ MCL', size:'640 KB', date:'Sep 11', tag:['b-red','Order'], pdf:true },
+  { name:'Notice of Appearance.pdf', case:'Camp Lejeune', size:'210 KB', date:'Sep 10', tag:['b-blue','Notice'], pdf:true },
+  { name:'Exhibit Bundle A–L (coded).zip', case:'3M Combat Arms', size:'18 MB', date:'Sep 10', tag:['b-green','Exhibits'], pdf:false },
+];
+
+const logItems = [
+  { dot:'red',   t:'<b>Alert triggered</b> — High priority Order in Zantac MDL', meta:'System rule · 12m ago' },
+  { dot:'green', t:'<b>M. Ruiz (Clerk)</b> acknowledged deadline for Roundup Daubert response', meta:'Managing Clerk · 40m ago' },
+  { dot:'blue',  t:'<b>Ingestion</b> — 128 docket entries pulled from demo feed', meta:'Scheduler · 1h ago' },
+  { dot:'amber', t:'<b>T. Okafor (Paralegal)</b> coded 42 exhibits for 3M Combat Arms', meta:'Lit Paralegal · 3h ago' },
+  { dot:'blue',  t:'<b>F. Shaher (Admin)</b> updated DocketBird poll interval to 15 min', meta:'Admin · 5h ago' },
+  { dot:'green', t:'<b>File linked</b> — CMO No. 14 attached to Zantac matter', meta:'System · 6h ago' },
+];
+
+const logStats = [
+  ['Ingestion events', 128, 'b-blue'],
+  ['Alerts triggered', 7, 'b-red'],
+  ['Documents coded', 42, 'b-green'],
+  ['User actions', 19, 'b-brass'],
+  ['Deadline changes', 4, 'b-amber'],
+];
+
+const users = [
+  { in:'FS', name:'Firas Shaher', email:'fshaher@seegerweiss.com', role:['b-brass','Admin (Dev)'], matters:'All', last:'now', status:['b-green','Active'] },
+  { in:'MR', name:'Maria Ruiz', email:'mruiz@seegerweiss.com', role:['b-blue','Managing Clerk'], matters:'42 matters', last:'40m ago', status:['b-green','Active'] },
+  { in:'TO', name:'Tunde Okafor', email:'tokafor@seegerweiss.com', role:['b-green','Lit Paralegal'], matters:'8 matters', last:'3h ago', status:['b-green','Active'] },
+  { in:'JL', name:'Jenna Lowe', email:'jlowe@seegerweiss.com', role:['b-green','Lit Paralegal'], matters:'6 matters', last:'1d ago', status:['b-gray','Invited'] },
+];
+
+// ---------- Reconciliation mock data ----------
+const teamPeople = {
+  'Zantac MDL': [
+    {id:'mruiz', name:'Maria Ruiz', role:'Managing Clerk', email:'mruiz@seegerweiss.com'},
+    {id:'tokafor', name:'Tunde Okafor', role:'Lit Paralegal', email:'tokafor@seegerweiss.com'},
+    {id:'dcohen', name:'David Cohen', role:'Associate', email:'dcohen@seegerweiss.com'},
+  ],
+  'Talc NJ MCL 300': [
+    {id:'mruiz', name:'Maria Ruiz', role:'Managing Clerk', email:'mruiz@seegerweiss.com'},
+    {id:'jlowe', name:'Jenna Lowe', role:'Lit Paralegal', email:'jlowe@seegerweiss.com'},
+    {id:'aperez', name:'Ana Perez', role:'Partner', email:'aperez@seegerweiss.com'},
+  ],
+  'Roundup MDL': [
+    {id:'tokafor', name:'Tunde Okafor', role:'Lit Paralegal', email:'tokafor@seegerweiss.com'},
+    {id:'dcohen', name:'David Cohen', role:'Associate', email:'dcohen@seegerweiss.com'},
+  ],
+  'Accutane NJ MCL': [
+    {id:'jlowe', name:'Jenna Lowe', role:'Lit Paralegal', email:'jlowe@seegerweiss.com'},
+    {id:'mruiz', name:'Maria Ruiz', role:'Managing Clerk', email:'mruiz@seegerweiss.com'},
+  ],
+  'Camp Lejeune': [
+    {id:'tokafor', name:'Tunde Okafor', role:'Lit Paralegal', email:'tokafor@seegerweiss.com'},
+  ],
+  'Paraquat MDL': [
+    {id:'jlowe', name:'Jenna Lowe', role:'Lit Paralegal', email:'jlowe@seegerweiss.com'},
+    {id:'dcohen', name:'David Cohen', role:'Associate', email:'dcohen@seegerweiss.com'},
+  ],
+};
+
+const recEntries = [
+  { no:'2,924', case:'Zantac MDL', full:'In re: Zantac (Ranitidine) Products Liab.', court:'S.D. Fla. · 9:20-md-02924', filed:'Sep 11, 2026', judge:'Hon. R. Rosenberg', type:['b-red','Order'],
+    title:'Case Management Order No. 14',
+    text:'CASE MANAGEMENT ORDER NO. 14 setting Science Day for the parties and establishing the general causation expert disclosure schedule. Plaintiffs’ expert reports due Sep 29, 2026; Defendants’ responsive reports due Oct 27, 2026. Daubert briefing to follow per attached schedule.',
+    suggest:{title:'Plaintiffs’ expert reports due (CMO 14)', date:'2026-09-29', type:'Filing deadline'},
+    att:[ {n:'CMO No. 14 — Science Day Schedule.pdf', s:'1.4 MB · 8 pages', t:'pdf'}, {n:'Exhibit A — Expert Deadline Grid.pdf', s:'220 KB · 2 pages', t:'pdf'} ] },
+  { no:'2,204', case:'Talc NJ MCL 300', full:'In re: Talcum Powder', court:'NJ Super. — Atlantic · MCL 300', filed:'Sep 11, 2026', judge:'Hon. M. Johnson', type:['b-blue','Notice'],
+    title:'PSC Quarterly Status Report',
+    text:'STATUS REPORT by Plaintiffs’ Steering Committee regarding the Q3 census and plaintiff fact sheet completion rates. Next status conference requested for Oct 2, 2026.',
+    suggest:{title:'PSC status conference', date:'2026-10-02', type:'Case management conf.'},
+    att:[ {n:'PSC Status Report — Q3 Census.pdf', s:'820 KB · 12 pages', t:'pdf'} ] },
+  { no:'1,880', case:'Roundup MDL', full:'In re: Roundup Products Liab.', court:'N.D. Cal. · 3:16-md-02741', filed:'Sep 11, 2026', judge:'Hon. V. Chhabria', type:['b-amber','Motion'],
+    title:'Defendants’ Daubert Motion to Exclude',
+    text:'MOTION to Exclude Expert Testimony (Daubert) filed by Defendants as to plaintiffs’ general causation experts. Response due Sep 17, 2026 per local rules. Reply due Sep 24, 2026.',
+    suggest:{title:'Daubert response due', date:'2026-09-17', type:'Filing deadline'},
+    att:[ {n:'Daubert Motion to Exclude.pdf', s:'3.2 MB · 41 pages', t:'pdf'}, {n:'Declaration in Support.pdf', s:'1.1 MB · 9 pages', t:'pdf'}, {n:'Exhibits 1-14.zip', s:'18 MB', t:'zip'} ] },
+  { no:'1,180', case:'Accutane NJ MCL', full:'In re: Accutane', court:'NJ Super. — Atlantic · MCL 271', filed:'Sep 11, 2026', judge:'Hon. J. Porto', type:['b-red','Order'],
+    title:'Order to Show Cause',
+    text:'ORDER TO SHOW CAUSE why certain plaintiff claims should not be dismissed for deficient plaintiff fact sheets. Written response required by Sep 18, 2026. Hearing on the OSC set for Sep 25, 2026.',
+    suggest:{title:'OSC response — fact sheet deficiencies', date:'2026-09-18', type:'Filing deadline'},
+    att:[ {n:'Order to Show Cause.pdf', s:'640 KB · 5 pages', t:'pdf'}, {n:'Deficiency Schedule A.pdf', s:'380 KB · 3 pages', t:'pdf'} ] },
+  { no:'742', case:'Camp Lejeune', full:'In re: Camp Lejeune Water Litig.', court:'E.D.N.C. · 7:23-cv-00897', filed:'Sep 10, 2026', judge:'Hon. R. Flanagan', type:['b-blue','Notice'],
+    title:'Notice of Appearance',
+    text:'NOTICE OF APPEARANCE by defense counsel on behalf of the United States. No response deadline. Informational only — associate to note appearance in matter file.',
+    suggest:{title:'Note defense appearance in matter file', date:'2026-09-12', type:'Internal review'},
+    att:[ {n:'Notice of Appearance.pdf', s:'210 KB · 2 pages', t:'pdf'} ] },
+  { no:'3,004', case:'Paraquat MDL', full:'In re: Paraquat Products Liab.', court:'S.D. Ill. · 3:21-md-03004', filed:'Sep 10, 2026', judge:'Hon. N. Rosenstengel', type:['b-gray','CMO'],
+    title:'Notice of Case Management Conference',
+    text:'NOTICE of Case Management Conference set for Sep 22, 2026 at 10:00 AM. Joint agenda due three business days prior. Lead counsel attendance required.',
+    suggest:{title:'Case management conference', date:'2026-09-22', type:'Case management conf.'},
+    att:[ {n:'CMC Notice.pdf', s:'160 KB · 1 page', t:'pdf'} ] },
+];
+
+// ---------- Render helpers ----------
+const el = (h) => { const d=document.createElement('div'); d.innerHTML=h.trim(); return d.firstChild; };
+const badge = (b) => `<span class="badge ${b[0]}">${b[1]}</span>`;
+
+function alertRow(a){
+  return `<div class="alert-row">
+    <div class="alert-icn ${a.icn}">${a.ic}</div>
+    <div class="alert-main">
+      <div class="t">${a.t}</div><div class="m">${a.m}</div>
+      <div class="meta">${badge(a.badge)}<span>${a.case}</span></div>
+    </div>
+    <div class="alert-time">${a.time}</div>
+  </div>`;
+}
+
+function render(){
+  document.getElementById('dashAlerts').innerHTML = alerts.slice(0,5).map(alertRow).join('');
+  document.getElementById('alertsFull').innerHTML = alerts.map(alertRow).join('');
+
+  document.getElementById('dashDeadlines').innerHTML = deadlines.map(d=>`
+    <div class="dl-row"><div class="dl-date"><div class="d">${d.d}</div><div class="mo">${d.mo}</div></div>
+    <div class="dl-main"><div class="t">${d.t}</div><div class="s">${d.s}</div></div></div>`).join('');
+
+  document.getElementById('casesBody').innerHTML = cases.map(c=>`
+    <tr><td><div class="cell-strong">${c.name}</div></td>
+    <td>${c.court}</td><td class="mono">${c.dkt}</td><td>${badge(c.type)}</td>
+    <td>${c.last}</td><td>${c.alerts? `<span class="badge b-red">${c.alerts}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
+    <td>${badge(c.status)}</td></tr>`).join('');
+
+  document.getElementById('docketsBody').innerHTML = dockets.map(d=>`
+    <tr><td class="mono">${d.no}</td><td>${d.filed}</td><td class="cell-strong">${d.case}</td>
+    <td style="color:var(--slate)">${d.text}</td><td>${badge(d.type)}</td></tr>`).join('');
+
+  document.getElementById('filesGrid').innerHTML = files.map(f=>`
+    <div class="file-card">
+      <div class="file-top">
+        <div class="file-icn ${f.pdf?'pdf':''}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+        <div><div class="file-name">${f.name}</div><div class="file-meta">${f.case}</div></div>
+      </div>
+      <div class="file-foot"><span>${badge(f.tag)}</span><span>${f.size} · ${f.date}</span></div>
+    </div>`).join('');
+
+  document.getElementById('logTimeline').innerHTML = logItems.map(l=>`
+    <div class="tl-item"><div class="tl-dot ${l.dot}"></div>
+    <div class="tl-body"><div class="t">${l.t}</div><div class="meta">${l.meta}</div></div></div>`).join('');
+
+  document.getElementById('logStats').innerHTML = logStats.map(s=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line-2)">
+    <span>${badge([s[2], s[0]])}</span><b style="font-size:15px">${s[1]}</b></div>`).join('');
+
+  document.getElementById('usersBody').innerHTML = users.map(u=>`
+    <tr><td><div style="display:flex;align-items:center;gap:10px"><span class="avatar-sm">${u.in}</span>
+    <div><div class="cell-strong">${u.name}</div><div class="cell-sub">${u.email}</div></div></div></td>
+    <td>${badge(u.role)}</td><td>${u.matters}</td><td>${u.last}</td><td>${badge(u.status)}</td></tr>`).join('');
+}
+render();
+
+// ---------- Reconciliation logic ----------
+let recActive = 0;
+let recipients = [];      // selected {id,name,role,email}
+const doneSet = new Set();
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>' + msg;
+  t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+function renderQueue(){
+  const q = document.getElementById('recQueue');
+  q.innerHTML = recEntries.map((e,i)=>`
+    <div class="rec-q-item ${i===recActive?'active':''} ${doneSet.has(i)?'done':''}" data-i="${i}">
+      <div class="rec-q-top"><span class="rec-q-case">${e.case}</span>
+        ${badge(e.type)}<span class="mono">#${e.no}</span></div>
+      <div class="rec-q-text">${e.title} — ${e.text}</div>
+      <div class="rec-q-foot"><span>${e.filed}</span>·<span>${e.att.length} attachment${e.att.length>1?'s':''}</span>${doneSet.has(i)?'· <span class="badge b-green">Reviewed</span>':''}</div>
+    </div>`).join('');
+  const remaining = recEntries.length - doneSet.size;
+  document.getElementById('recCount').textContent = remaining + ' entries';
+  const nav = document.querySelector('.nav-item[data-view="reconcile"] .count');
+  if(nav){ nav.textContent = remaining; nav.style.display = remaining? '' : 'none'; }
+}
+
+function renderDetail(){
+  const e = recEntries[recActive];
+  document.getElementById('recDocket').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px">${badge(e.type)}<span class="mono">Entry #${e.no}</span>
+      <span style="margin-left:auto" class="badge ${doneSet.has(recActive)?'b-green':'b-amber'}">${doneSet.has(recActive)?'Reviewed':'Needs review'}</span></div>
+    <div class="d-title" style="margin-top:10px">${e.title}</div>
+    <div class="d-meta">
+      <div class="kx"><b>Case</b>${e.full}</div>
+      <div class="kx"><b>Court / Docket</b>${e.court}</div>
+      <div class="kx"><b>Filed</b>${e.filed}</div>
+      <div class="kx"><b>Judge</b>${e.judge}</div>
+    </div>
+    <div class="d-text">${e.text}</div>`;
+
+  document.getElementById('recAttCount').textContent = e.att.length + ' file' + (e.att.length>1?'s':'');
+  document.getElementById('recAtt').innerHTML = e.att.map(a=>`
+    <div class="att-row">
+      <div class="att-icn ${a.t==='zip'?'zip':''}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      </div>
+      <div class="att-main"><div class="n">${a.n}</div><div class="s">${a.s}</div></div>
+      <div class="att-actions"><button class="att-btn" data-att-view="${a.n}">View</button><button class="att-btn">Download</button></div>
+    </div>`).join('');
+
+  // prefill calendar event from suggestion
+  document.getElementById('evTitle').value = e.suggest.title;
+  document.getElementById('evDate').value = e.suggest.date;
+  document.getElementById('evType').value = e.suggest.type;
+  // reset recipients to full case team
+  recipients = (teamPeople[e.case]||[]).slice();
+  renderRecipients();
+  updatePreview();
+}
+
+function renderRecipients(){
+  const box = document.getElementById('recipBox');
+  box.innerHTML = recipients.map(r=>`
+    <span class="recip">${r.name} · ${r.role}<span class="x" data-rm="${r.id}">✕</span></span>`).join('')
+    + `<span class="recip-add" id="recipAdd">+ Add recipient</span>`;
+}
+
+function updatePreview(){
+  const e = recEntries[recActive];
+  const title = document.getElementById('evTitle').value || '(untitled event)';
+  const date = document.getElementById('evDate').value || '(no date)';
+  const time = document.getElementById('evTime').value || '';
+  const type = document.getElementById('evType').value;
+  const remind = document.getElementById('evRemind').value;
+  const note = document.getElementById('evNote').value;
+  const to = recipients.length ? recipients.map(r=>r.email).join(', ') : '(no recipients)';
+  document.getElementById('emailPreview').innerHTML = `
+    <div><b>To:</b> ${to}</div>
+    <div class="subj" style="margin-top:6px">Subject: [${e.case}] ${type} — ${title}</div>
+    <div style="margin-top:8px">Calendar event <b>${title}</b> on <b>${date}${time?' '+time:''}</b> (${type}). Reminder ${remind}. Linked to docket entry #${e.no} (${e.full}) and ${e.att.length} attachment${e.att.length>1?'s':''}.${note?'<br>Note: '+note:''}</div>`;
+}
+
+function recipMenu(anchor){
+  document.querySelectorAll('.recip-menu').forEach(m=>m.remove());
+  const e = recEntries[recActive];
+  const team = teamPeople[e.case]||[];
+  // pool: everyone across all teams, de-duped
+  const all = {};
+  Object.values(teamPeople).forEach(list=>list.forEach(p=>all[p.id]=p));
+  const menu = document.createElement('div');
+  menu.className = 'recip-menu';
+  const chosen = new Set(recipients.map(r=>r.id));
+  const teamHtml = team.filter(p=>!chosen.has(p.id)).map(p=>`<div class="opt" data-add="${p.id}"><span class="avatar-sm">${p.name.split(' ').map(x=>x[0]).join('')}</span>${p.name} · ${p.role}</div>`).join('');
+  const otherHtml = Object.values(all).filter(p=>!chosen.has(p.id) && !team.find(t=>t.id===p.id)).map(p=>`<div class="opt" data-add="${p.id}"><span class="avatar-sm">${p.name.split(' ').map(x=>x[0]).join('')}</span>${p.name} · ${p.role}</div>`).join('');
+  menu.innerHTML = (teamHtml?'<div class="grp">This case team</div>'+teamHtml:'') + (otherHtml?'<div class="grp">Other firm members</div>'+otherHtml:'') || '<div class="grp">Everyone already added</div>';
+  document.body.appendChild(menu);
+  const r = anchor.getBoundingClientRect();
+  menu.style.top = (r.bottom+6)+'px';
+  menu.style.left = Math.min(r.left, window.innerWidth-260)+'px';
+  const poolMap = all;
+  menu.addEventListener('click', ev=>{
+    const opt = ev.target.closest('[data-add]'); if(!opt) return;
+    const p = poolMap[opt.dataset.add];
+    if(p && !recipients.find(x=>x.id===p.id)){ recipients.push(p); renderRecipients(); updatePreview(); }
+    menu.remove();
+  });
+}
+
+// queue + detail events
+document.getElementById('recQueue').addEventListener('click', e=>{
+  const item = e.target.closest('.rec-q-item'); if(!item) return;
+  recActive = +item.dataset.i; renderQueue(); renderDetail();
+});
+document.getElementById('recAtt').addEventListener('click', e=>{
+  const b = e.target.closest('[data-att-view]'); if(b) toast('Opening “'+b.dataset.attView+'” (mock viewer)');
+});
+document.getElementById('recipBox').addEventListener('click', e=>{
+  const rm = e.target.closest('[data-rm]');
+  if(rm){ recipients = recipients.filter(r=>r.id!==rm.dataset.rm); renderRecipients(); updatePreview(); return; }
+  const add = e.target.closest('#recipAdd');
+  if(add){ recipMenu(add); }
+});
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.recip-menu') && !e.target.closest('#recipAdd')) document.querySelectorAll('.recip-menu').forEach(m=>m.remove());
+});
+['evTitle','evDate','evTime','evType','evRemind','evNote'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updatePreview);
+  document.getElementById(id).addEventListener('change', updatePreview);
+});
+document.getElementById('btnSendEvent').addEventListener('click', ()=>{
+  if(!recipients.length){ toast('Add at least one recipient'); return; }
+  doneSet.add(recActive);
+  toast('Event created · invite emailed to '+recipients.length+' recipient'+(recipients.length>1?'s':''));
+  renderQueue(); renderDetail();
+});
+document.getElementById('btnAddCal').addEventListener('click', ()=>{
+  doneSet.add(recActive); toast('Added to your calendar'); renderQueue(); renderDetail();
+});
+renderQueue(); renderDetail();
+
+// ---------- Navigation ----------
+const navItems = document.querySelectorAll('.nav-item');
+const views = document.querySelectorAll('.view');
+function goto(view){
+  navItems.forEach(n=>n.classList.toggle('active', n.dataset.view===view));
+  views.forEach(v=>v.classList.toggle('active', v.dataset.view===view));
+  document.getElementById('main').scrollTop = 0;
+}
+navItems.forEach(n=>n.addEventListener('click', ()=>goto(n.dataset.view)));
+document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click', ()=>goto(b.dataset.goto)));
+
+// ---------- Role switching ----------
+const roleConfig = {
+  admin: { avatar:'FS', title:'MCO Docket Overview', sub:'Portfolio-wide docket activity across active multi-county and MDL matters.', admin:true },
+  clerk: { avatar:'MR', title:'Managing Clerk — Docket Desk', sub:'Filings, orders, and deadlines to calendar across all firm matters.', admin:false },
+  para:  { avatar:'TO', title:'My Matters — Litigation Support', sub:'Docket activity and files for the matters assigned to you.', admin:false },
+};
+document.querySelectorAll('#roleSwitch button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#roleSwitch button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    const cfg = roleConfig[b.dataset.role];
+    document.getElementById('userAvatar').textContent = cfg.avatar;
+    document.getElementById('dashTitle').textContent = cfg.title;
+    document.getElementById('dashSub').textContent = cfg.sub;
+    document.querySelectorAll('.admin-only').forEach(x=>x.classList.toggle('hide', !cfg.admin));
+    // if a hidden admin view is open, fall back to dashboard
+    const active = document.querySelector('.nav-item.active');
+    if(active && active.classList.contains('admin-only') && !cfg.admin) goto('dashboard');
+  });
+});
+
+// ---------- Cosmetic toggles / chips ----------
+document.addEventListener('click', (e)=>{
+  if(e.target.classList.contains('toggle')) e.target.classList.toggle('on');
+  if(e.target.classList.contains('chip')){
+    const grp = e.target.parentElement.querySelectorAll('.chip');
+    grp.forEach(c=>c.classList.remove('active'));
+    e.target.classList.add('active');
+  }
+});
+</script>
+</body>
+</html>
